@@ -160,7 +160,10 @@ final class PlayerScreen: UIViewController, VLCMediaPlayerDelegate {
 
     /// The button is there while the channel plays, the phone can do picture in picture and VLC's display is ready.
     private func pictureChanged() {
-        let can = state == .playing && picture.controller != nil && AVPictureInPictureController.isPictureInPictureSupported()
+        let supported = AVPictureInPictureController.isPictureInPictureSupported()
+        let can = state == .playing && picture.controller != nil && supported
+        // for the replica: why the button is or is not there
+        probe.accessibilityValue = "pip device \(supported ? "can" : "cannot"), vlc \(picture.controller != nil ? "ready" : "not ready")"
         guard pipButton.isHidden == can else { return }
         pipButton.isHidden = !can
         view.setNeedsLayout()

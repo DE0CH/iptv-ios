@@ -60,7 +60,9 @@ final class IPTVUITests: XCTestCase {
         shot("flow-playing")
         // picture in picture: the button is there where the device can do it (reported; a simulator may not)
         let pip = app.buttons["Picture in picture"]
-        print("PIP button: \(pip.exists ? "shown" : "not shown")")
+        Thread.sleep(forTimeInterval: 1)
+        let why = app.descendants(matching: .any)["player-state"].firstMatch.value as? String ?? "?"
+        print("PIP button: \(pip.exists ? "shown" : "not shown") (\(why))")
         if pip.exists {
             pip.tap()
             Thread.sleep(forTimeInterval: 3)
@@ -120,9 +122,20 @@ final class IPTVUITests: XCTestCase {
         print("LIVE playlist: \(loaded ? count.label : "no answer in 60 s") after \(String(format: "%.1f", Date().timeIntervalSince(started))) s | \(texts(app))")
         shot("live-list")
         if loaded {
-            app.cells.firstMatch.tap()
-            print("LIVE first channel: \(player(app, "playing", 30))")
-            shot("live-player")
+            // the first channels in turn until one plays: any one of them may be off the air or closed to the runner
+            var results: [String] = []
+            for i in 0..<min(5, app.cells.count) {
+                let cell = app.cells.element(boundBy: i)
+                let name = cell.staticTexts.firstMatch.label
+                cell.tap()
+                let state = player(app, "playing", 25)
+                results.append("\(name): \(state)")
+                if state == "playing" { Thread.sleep(forTimeInterval: 2); shot("live-player") }
+                app.buttons["Back"].tap()
+                _ = count.waitForExistence(timeout: 5)
+                if state == "playing" { break }
+            }
+            print("LIVE channels: \(results.joined(separator: "; "))")
         }
         app.terminate()
     }
