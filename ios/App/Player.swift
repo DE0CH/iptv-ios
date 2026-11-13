@@ -12,6 +12,7 @@ final class PlayerScreen: UIViewController, VLCMediaPlayerDelegate {
     private let channel: Channel
     private let frozen: PlayerState?   // the replica's held state: nothing is played
     private let video = UIView()
+    private let touch = UIControl()
     private let bar = UIView()
     private let back = UIControl()
     private let backIcon = IconView(Icon.back, size: 24, tint: .white)
@@ -56,9 +57,12 @@ final class PlayerScreen: UIViewController, VLCMediaPlayerDelegate {
         probe.isAccessibilityElement = true
         probe.accessibilityIdentifier = "player-state"
         probe.alpha = 0.02
-        for v in [video, bar, connecting, cross, failed, again, probe] as [UIView] { view.addSubview(v) }
+        // a control over the whole picture takes the tap that shows or hides the bar (VLC's own view sits in `video`)
+        touch.accessibilityIdentifier = "picture"
+        touch.isAccessibilityElement = true
+        touch.addTarget(self, action: #selector(tapped), for: .touchUpInside)
+        for v in [video, touch, bar, connecting, cross, failed, again, probe] as [UIView] { view.addSubview(v) }
         again.onTap = { [weak self] in self?.start() }
-        view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(tapped)))
     }
 
     override func viewDidLoad() {
@@ -81,6 +85,7 @@ final class PlayerScreen: UIViewController, VLCMediaPlayerDelegate {
         let safe = view.safeAreaInsets
         let x = safe.left, w = view.bounds.width - safe.left - safe.right
         video.frame = view.bounds
+        touch.frame = view.bounds
         bar.frame = CGRect(x: x, y: safe.top, width: w, height: 56)
         back.frame = CGRect(x: 4, y: 6, width: 44, height: 44)
         backIcon.frame = CGRect(x: 10, y: 10, width: 24, height: 24)

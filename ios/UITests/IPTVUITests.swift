@@ -66,7 +66,7 @@ final class IPTVUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 3)
         // the bar has hidden itself; a tap brings it back
         XCTAssertFalse(app.buttons["Back"].exists, "the bar did not hide")
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6)).tap()
+        app.descendants(matching: .any)["picture"].firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6)).tap()
         XCTAssertTrue(app.buttons["Back"].waitForExistence(timeout: 3), "the bar did not come back")
         XCTAssertEqual(player(app, "playing", 5), "playing")
         shot("flow-playing-bar")
@@ -96,13 +96,13 @@ final class IPTVUITests: XCTestCase {
         app.terminate()
     }
 
-    /// The real thing: a large public playlist over the network and its first channel. Reported, not gating: the
+    /// The real thing: a public playlist over the network and its first channel. Reported, not gating: the
     /// playlist's host or the channel may not answer a CI runner.
     func testLive() throws {
         XCUIDevice.shared.orientation = .portrait
         let app = launch(["-reset"])
         _ = app.staticTexts["No playlist loaded"].waitForExistence(timeout: 20)
-        type(app, "https://iptv-org.github.io/iptv/index.m3u")
+        type(app, "https://iptv-org.github.io/iptv/countries/hk.m3u")
         let started = Date()
         app.buttons["Load"].tap()
         let count = app.staticTexts.matching(NSPredicate(format: "label ENDSWITH ' channels'")).firstMatch
@@ -134,7 +134,10 @@ final class IPTVUITests: XCTestCase {
                     print("ROTATE \(mode) landscape \(Date().timeIntervalSince1970)")
                     XCUIDevice.shared.orientation = .landscapeLeft
                 }
-                Thread.sleep(forTimeInterval: 3)
+                // the page may take a while the first time WebKit starts: wait for its text, then let it settle
+                let mark = s.state == "connecting" || s.state == "failed" ? "NASA TV" : "Playlist URL"
+                XCTAssertTrue(app.staticTexts[mark].waitForExistence(timeout: 30), "\(s.name) \(mode): \(texts(app))")
+                Thread.sleep(forTimeInterval: 2)
                 pair[mode] = XCUIScreen.main.screenshot()
                 app.terminate()
             }

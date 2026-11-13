@@ -146,6 +146,12 @@ final class PlaylistSheet: UIView {
         layout()
     }
 
+    // the table sets the header's width itself (a rotation, a new header height): lay out whenever the size changes
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        layout()
+    }
+
     func layout() {
         let w = bounds.width
         sheet.frame = CGRect(x: 0, y: 0, width: w, height: PlaylistSheet.height)
