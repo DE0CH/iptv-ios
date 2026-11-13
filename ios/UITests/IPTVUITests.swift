@@ -131,6 +131,7 @@ final class IPTVUITests: XCTestCase {
                 let state = player(app, "playing", 25)
                 results.append("\(name): \(state)")
                 if state == "playing" { Thread.sleep(forTimeInterval: 2); shot("live-player") }
+                if !app.buttons["Back"].exists { app.descendants(matching: .any)["picture"].firstMatch.tap() }   // the bar had hidden
                 app.buttons["Back"].tap()
                 _ = count.waitForExistence(timeout: 5)
                 if state == "playing" { break }
