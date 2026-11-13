@@ -45,7 +45,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ios/Frameworks
-          key: mobilevlckit-3.6.0-c73b779f
+          key: vlckit-4.0.0a19-d7597c1706
       - name: Xcode, VLCKit, xcodegen
         env:
           BUILD_NUMBER: ${{ github.run_number }}
@@ -84,6 +84,7 @@ jobs:
             -derivedDataPath DerivedData ONLY_ACTIVE_ARCH=YES ARCHS=arm64 CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO)
           xcodebuild build-for-testing "${COMMON[@]}" > "$RUNNER_TEMP/build.log" 2>&1 || true
           grep -E "error:|\*\* TEST BUILD" "$RUNNER_TEMP/build.log" | head -20 || true
+          grep -E "error:" "$RUNNER_TEMP/build.log" | sort -u | head -8 | while IFS= read -r l; do echo "::error title=build::${l:0:900}"; done || true
           # A video of the whole run: the rotations, frame by frame (the test logs "ROTATE <mode> <epoch>").
           python3 -c "import time; print(time.time())" > "$RUNNER_TEMP/screens/video-start.txt"
           xcrun simctl io "$UDID" recordVideo --codec=h264 --force "$RUNNER_TEMP/screens/replica.mp4" 2>/dev/null & RECORDER=$!
@@ -107,7 +108,7 @@ jobs:
           print(f"screenshots: {n}")
           PY
           # failures and the per-state comparisons as annotations too: they are readable without signing in to GitHub
-          { grep -E "error:|XCTAssert" "$RUNNER_TEMP/test.log" | head -6; grep -E "COMPARE |LIVE " "$RUNNER_TEMP/test.log" | head -12; } \
+          { grep -E "error:|XCTAssert" "$RUNNER_TEMP/test.log" | head -6; grep -E "COMPARE |LIVE |PIP " "$RUNNER_TEMP/test.log" | head -14; } \
             | while IFS= read -r l; do echo "::warning title=replica::${l:0:900}"; done || true
           grep -qE "\*\* TEST (EXECUTE )?SUCCEEDED \*\*" "$RUNNER_TEMP/test.log"
       - name: Keep the replica screenshots and log
@@ -129,6 +130,7 @@ jobs:
             -derivedDataPath DerivedData -archivePath "$RUNNER_TEMP/app.xcarchive" \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" > "$RUNNER_TEMP/archive.log" 2>&1 || true
           grep -E "error:|\*\* ARCHIVE" "$RUNNER_TEMP/archive.log" | head -40 || true
+          grep -E "error:" "$RUNNER_TEMP/archive.log" | sort -u | head -5 | while IFS= read -r l; do echo "::error title=archive::${l:0:900}"; done || true
           grep -q "ARCHIVE SUCCEEDED" "$RUNNER_TEMP/archive.log"
       - name: Export, cloud-sign and upload to TestFlight
         if: inputs.upload || (github.event_name == 'push' && github.workflow == 'ios')
@@ -142,4 +144,5 @@ jobs:
             -exportPath "$RUNNER_TEMP/export" -allowProvisioningUpdates -authenticationKeyPath "$KEY" \
             -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" > "$RUNNER_TEMP/export.log" 2>&1 || true
           grep -E "error|EXPORT|Upload|Uploaded|uploaded" "$RUNNER_TEMP/export.log" | sed "s#$RUNNER_TEMP/##" | tail -n 25 || true
+          grep -E "error" "$RUNNER_TEMP/export.log" | sort -u | head -5 | while IFS= read -r l; do echo "::error title=export::${l:0:900}"; done || true
           grep -qE "EXPORT SUCCEEDED|Upload succeeded|Uploaded" "$RUNNER_TEMP/export.log"

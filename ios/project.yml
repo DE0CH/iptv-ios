@@ -1,5 +1,5 @@
 # XcodeGen spec (CI runs `xcodegen generate`; the .xcodeproj is not committed). No server, no secrets.
-# Frameworks/MobileVLCKit.xcframework is VLC's engine, fetched by ios/vlckit.sh (not committed: 250 MB).
+# Frameworks/VLCKit.xcframework is VLC's engine, fetched by ios/vlckit.sh (not committed: a 520 MB download).
 name: IPTV
 options:
   bundleIdPrefix: dev.de0ch
@@ -29,7 +29,7 @@ targets:
         type: folder
         buildPhase: resources
     dependencies:
-      - framework: Frameworks/MobileVLCKit.xcframework
+      - framework: Frameworks/VLCKit.xcframework
         embed: true
     settings:
       base:
@@ -54,6 +54,7 @@ targets:
         UISupportedInterfaceOrientations:
           [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
         LSRequiresIPhoneOS: true
+        UIBackgroundModes: [audio]   # picture in picture needs it
         # playlists and streams are mostly plain http, often on the home network
         NSAppTransportSecurity: { NSAllowsArbitraryLoads: true }
         NSLocalNetworkUsageDescription: Playlists and channels on your own network are loaded from it.

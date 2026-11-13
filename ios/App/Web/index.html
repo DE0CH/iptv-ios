@@ -45,6 +45,9 @@ body.player { background: #000; color: #fff; }
 .back svg { position: absolute; left: 10px; top: 10px; width: 24px; height: 24px; }
 .name { position: absolute; left: 56px; right: 16px; top: 14px; font-size: 18px; line-height: 28px; font-weight: 600;
   overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.pip { position: absolute; right: 4px; top: 6px; width: 44px; height: 44px; border: 0; background: none; color: #fff; }
+.pip svg { position: absolute; left: 10px; top: 10px; width: 24px; height: 24px; }
+.name.short { right: 56px; }
 .msg { position: relative; padding: 8px 16px 0; }
 .msg p { color: #9ea6ae; }
 .msg.bad p { padding-left: 26px; color: #fff; }
@@ -76,7 +79,8 @@ if (S.screen === "player") {
   document.body.innerHTML =
     (S.player === "playing" ? '<div class="video"></div>' : "") +
     '<div class="bar"><button class="back" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>' +
-    '<div class="name">' + esc(S.name) + "</div></div>" +
+    '<div class="name' + (S.player === "playing" ? " short" : "") + '">' + esc(S.name) + "</div>" +
+    (S.player === "playing" ? '<button class="pip" aria-label="Picture in picture"><svg viewBox="0 0 24 24"><path d="M3 5L21 5L21 19L3 19L3 5M12 12L18 12L18 16L12 16L12 12"/></svg></button>' : "") + "</div>" +
     (S.player === "connecting" ? '<div class="msg"><p>Connecting</p></div>' : "") +
     (S.player === "failed" ? '<div class="msg bad">' + CROSS + "<p>This channel did not play</p><button>Try again</button></div>" : "");
 } else {

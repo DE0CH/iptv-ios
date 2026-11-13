@@ -77,4 +77,5 @@ enum Words {
     static let didNotPlay = "This channel did not play"
     static let again = "Try again"
     static let back = "Back"
+    static let pip = "Picture in picture"
 }

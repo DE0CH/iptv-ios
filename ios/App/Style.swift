@@ -124,6 +124,7 @@ final class Box: UIView {
 enum Icon {
     static let cross = "M6 6l12 12M18 6L6 18"
     static let back = "M15 5l-7 7 7 7"
+    static let pip = "M3 5L21 5L21 19L3 19L3 5M12 12L18 12L18 16L12 16L12 12"
 
     static func path(_ d: String) -> UIBezierPath {
         let p = UIBezierPath()

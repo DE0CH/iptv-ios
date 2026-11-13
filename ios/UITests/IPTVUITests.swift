@@ -58,6 +58,16 @@ final class IPTVUITests: XCTestCase {
         app.staticTexts["Test card"].tap()
         XCTAssertEqual(player(app, "playing", 40), "playing")
         shot("flow-playing")
+        // picture in picture: the button is there where the device can do it (reported; a simulator may not)
+        let pip = app.buttons["Picture in picture"]
+        print("PIP button: \(pip.exists ? "shown" : "not shown")")
+        if pip.exists {
+            pip.tap()
+            Thread.sleep(forTimeInterval: 3)
+            shot("flow-picture-in-picture")
+            print("PIP after the tap: player \(player(app, "playing", 5))")
+            app.activate()
+        }
         print("ROTATE flow landscape \(Date().timeIntervalSince1970)")
         XCUIDevice.shared.orientation = .landscapeLeft
         Thread.sleep(forTimeInterval: 2)

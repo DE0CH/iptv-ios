@@ -3,17 +3,21 @@
 A minimal iPhone player for M3U IPTV playlists. Type the playlist's URL, tap Load, tap a channel.
 
 - **Two screens.** The list: the playlist URL, Load, a status line and the channels in the playlist's order. The
-  player: the channel full screen, in any orientation, with a bar (Back, the channel's name) that hides after 3
-  seconds of playing and comes back on a tap. Nothing else: no groups, search, favourites or programme guide.
+  player: the channel full screen, in any orientation, with a bar (Back, the channel's name, picture in picture) that hides
+  after 3 seconds of playing and comes back on a tap. Nothing else: no groups, search, favourites or programme guide.
 - **Playlist** (`core/Sources/Playlist/Playlist.swift`): `#EXTINF` names (text after the first comma outside quotes,
   else `tvg-name`, else the URL's last part), `#EXTVLCOPT:http-user-agent` / `http-referrer`, Kodi's
   `URL|User-Agent=…&Referer=…`, plain lists of URLs; UTF-8, else GB 18030, else Latin-1. The URL and the playlist's
   text are kept on the phone (UserDefaults, Application Support), so the channels are there at the next launch; Load
   fetches it again. A failed load leaves the channels already shown.
-- **Playback** (`ios/App/Player.swift`): VLC's engine, [MobileVLCKit](https://code.videolan.org/videolan/VLCKit) 3.6.0
+- **Playback** (`ios/App/Player.swift`): VLC's engine, [VLCKit](https://code.videolan.org/videolan/VLCKit) 4.0.0a19
   (LGPL 2.1, VideoLAN's own binary, fetched by `ios/vlckit.sh` and embedded as a dynamic framework), so HLS, MPEG-TS
   over HTTP, RTMP, RTSP and UDP streams play. A channel that does not start within 20 seconds, errors or ends shows
   "This channel did not play" with Try again.
+- **Picture in picture:** a button at the right of the player's bar while a channel plays. It is VLCKit 4's own
+  (3.x has none): the drawable conforms to `VLCPictureInPictureDrawable` and VLC hands back the controller that
+  starts it. Leaving the app without it stops the channel (it starts again on return); so does closing the small
+  picture while the app is in the background.
 - **Screens are UIKit drawn to a page.** `ios/App/Web/index.html` is the layout (open it in a browser with `#empty`,
   `#loading`, `#list`, `#error`, `#connecting`, `#failed`, `#playing`); `List.swift` and `Player.swift` place every
   piece by hand to its numbers, text as Core Text lines at WebKit's baselines (`Style.swift`). The launch flag
