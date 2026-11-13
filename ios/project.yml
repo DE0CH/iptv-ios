@@ -1,0 +1,73 @@
+# XcodeGen spec (CI runs `xcodegen generate`; the .xcodeproj is not committed). No server, no secrets.
+# Frameworks/MobileVLCKit.xcframework is VLC's engine, fetched by ios/vlckit.sh (not committed: 250 MB).
+name: IPTV
+options:
+  bundleIdPrefix: dev.de0ch
+  deploymentTarget: { iOS: "17.0" }
+  createIntermediateGroups: true
+settings:
+  base:
+    DEVELOPMENT_TEAM: S64YL394S3
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "$(BUILD_NUMBER)"
+    BUILD_NUMBER: "1"
+    SWIFT_VERSION: "5.9"
+targets:
+  IPTV:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+        excludes: ["Web/**", "Fixture/**"]
+      - path: ../core/Sources/Playlist   # the M3U parser, tested on Linux (core/)
+        group: App
+      - path: App/Web       # the page the screens are drawn from, shown with -reference
+        type: folder
+        buildPhase: resources
+      - path: App/Fixture   # the replica's playlist and test clip
+        type: folder
+        buildPhase: resources
+    dependencies:
+      - framework: Frameworks/MobileVLCKit.xcframework
+        embed: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.de0ch.iptv
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_BITCODE: NO
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: IPTV
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        ITSAppUsesNonExemptEncryption: false
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+          UISceneConfigurations:
+            UIWindowSceneSessionRoleApplication:
+              - UISceneConfigurationName: Default
+                UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).SceneDelegate
+        UISupportedInterfaceOrientations:
+          [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        LSRequiresIPhoneOS: true
+        # playlists and streams are mostly plain http, often on the home network
+        NSAppTransportSecurity: { NSAllowsArbitraryLoads: true }
+        NSLocalNetworkUsageDescription: Playlists and channels on your own network are loaded from it.
+  IPTVUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [UITests]
+    dependencies:
+      - target: IPTV
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.de0ch.iptv.uitests
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  IPTV:
+    build: { targets: { IPTV: all, IPTVUITests: [test] } }
+    test: { targets: [IPTVUITests] }

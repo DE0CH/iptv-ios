@@ -1,0 +1,25 @@
+#EXTM3U
+#EXTINF:-1 tvg-id="test" group-title="Test",Test card
+fixture://test.ts
+#EXTINF:-1 tvg-id="none" group-title="Test",No signal
+fixture://missing.ts
+#EXTINF:-1 tvg-id="nasa" group-title="Science",NASA TV
+https://example.com/nasa/master.m3u8
+#EXTINF:-1 group-title="News",Al Jazeera English
+https://example.com/aje/index.m3u8
+#EXTINF:-1 group-title="News",France 24
+https://example.com/f24.ts
+#EXTINF:-1 group-title="News",DW English
+https://example.com/dw.ts
+#EXTINF:-1 group-title="News",NHK World
+https://example.com/nhk.m3u8
+#EXTINF:-1 group-title="News",Bloomberg Television
+https://example.com/bloomberg.m3u8
+#EXTINF:-1 group-title="News",CCTV-13 新闻
+http://example.com:8080/cctv13.ts
+#EXTINF:-1 group-title="News",凤凰卫视资讯台
+http://example.com:8080/phoenix.ts
+#EXTINF:-1 group-title="General",TVB 翡翠台
+http://example.com:8080/jade.ts
+#EXTINF:-1 group-title="Sport",Red Bull TV
+https://example.com/redbull.m3u8

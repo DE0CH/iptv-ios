@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IPTV</title>
+<!-- The app's two screens as a page: the layout the native UIKit screens are drawn from (ios/App/List.swift,
+     Player.swift). In the app it is shown with the launch flag -reference, with window.STATE set by the app; opened
+     in a browser, the state comes from the hash (#empty #loading #list #error #connecting #failed #playing). -->
+<style>
+:root {
+  --ground: #eef0f2; --panel: #ffffff; --ink: #14171a; --muted: #59626b; --rule: #d3d8dd;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --ground: #111315; --panel: #1a1d20; --ink: #e8eaec; --muted: #9ea6ae; --rule: #33393f; color-scheme: dark; }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { background: var(--ground); color: var(--ink); font-size: 15px; line-height: 24px;
+  font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif; }
+
+/* the list screen */
+.sheet { background: var(--panel); }
+.playlist { padding: 16px; }
+.playlist label { display: block; font-size: 13px; line-height: 20px; color: var(--muted); }
+.field { display: flex; margin-top: 8px; height: 44px; }
+.field input { flex: 1; min-width: 0; height: 44px; border: 1px solid var(--rule); border-right: 0; padding: 0 12px;
+  font: inherit; color: var(--ink); background: var(--panel); outline: 0; -webkit-appearance: none; appearance: none; }
+.field input::placeholder { color: var(--muted); opacity: 1; }
+.field button { height: 44px; padding: 0 16px; border: 0; background: var(--ink); color: var(--panel); font: inherit;
+  font-weight: 600; }
+.status { position: relative; margin-top: 8px; font-size: 13px; line-height: 20px; color: var(--muted); }
+.status.bad { padding-left: 22px; color: var(--ink); }
+.status svg { position: absolute; left: 0; top: 2px; width: 16px; height: 16px; }
+.channels { margin-top: 8px; }
+.ch { height: 57px; padding: 14px 16px; border-bottom: 1px solid var(--rule); font-size: 18px; line-height: 28px;
+  font-weight: 500; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+/* the player screen: always dark */
+body.player { background: #000; color: #fff; }
+.video { position: fixed; inset: 0; background: #2a2d30; }
+.bar { position: relative; height: 56px; background: rgba(0, 0, 0, .6); }
+.back { position: absolute; left: 4px; top: 6px; width: 44px; height: 44px; border: 0; background: none; color: #fff; }
+.back svg { position: absolute; left: 10px; top: 10px; width: 24px; height: 24px; }
+.name { position: absolute; left: 56px; right: 16px; top: 14px; font-size: 18px; line-height: 28px; font-weight: 600;
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.msg { position: relative; padding: 8px 16px 0; }
+.msg p { color: #9ea6ae; }
+.msg.bad p { padding-left: 26px; color: #fff; }
+.msg svg { position: absolute; left: 16px; top: 10px; width: 20px; height: 20px; }
+.msg button { display: block; margin-top: 12px; height: 44px; padding: 0 16px; border: 0; background: #fff; color: #000;
+  font: inherit; font-weight: 600; }
+svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: square; }
+</style>
+</head>
+<body>
+<script>
+const NAMES = ["Test card", "No signal", "NASA TV", "Al Jazeera English", "France 24", "DW English", "NHK World",
+  "Bloomberg Television", "CCTV-13 新闻", "凤凰卫视资讯台", "TVB 翡翠台", "Red Bull TV"];
+const URL_ = "https://example.com/tv.m3u";
+const STATES = {
+  empty: { screen: "list", url: "", status: "none", text: "No playlist loaded", channels: [] },
+  loading: { screen: "list", url: URL_, status: "none", text: "Loading", channels: [] },
+  list: { screen: "list", url: URL_, status: "none", text: "12 channels", channels: NAMES },
+  error: { screen: "list", url: URL_, status: "bad", text: "This playlist could not be loaded", channels: [] },
+  connecting: { screen: "player", name: "NASA TV", player: "connecting" },
+  failed: { screen: "player", name: "NASA TV", player: "failed" },
+  playing: { screen: "player", name: "NASA TV", player: "playing" },
+};
+const S = window.STATE || STATES[location.hash.slice(1)] || STATES.list;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const CROSS = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+if (S.screen === "player") {
+  document.body.className = "player";
+  document.body.innerHTML =
+    (S.player === "playing" ? '<div class="video"></div>' : "") +
+    '<div class="bar"><button class="back" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>' +
+    '<div class="name">' + esc(S.name) + "</div></div>" +
+    (S.player === "connecting" ? '<div class="msg"><p>Connecting</p></div>' : "") +
+    (S.player === "failed" ? '<div class="msg bad">' + CROSS + "<p>This channel did not play</p><button>Try again</button></div>" : "");
+} else {
+  document.body.innerHTML =
+    '<div class="sheet playlist"><label for="url">Playlist URL</label>' +
+    '<div class="field"><input id="url" type="url" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" ' +
+    'placeholder="https://example.com/playlist.m3u" value="' + esc(S.url) + '"><button>Load</button></div>' +
+    '<div class="status' + (S.status === "bad" ? " bad" : "") + '">' + (S.status === "bad" ? CROSS : "") + "<span>" + esc(S.text) + "</span></div></div>" +
+    (S.channels.length ? '<div class="sheet channels">' + S.channels.map(n => '<div class="ch">' + esc(n) + "</div>").join("") + "</div>" : "");
+}
+</script>
+</body>
+</html>
